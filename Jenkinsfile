@@ -152,7 +152,7 @@ pipeline {
         
                         echo "Running application..."
                         cd deployed_app
-                        ./project/venv/bin/python ./deployed_app/app/main.py
+                        ../project/venv/bin/python app/main.py
                         """
                     }
                 }
