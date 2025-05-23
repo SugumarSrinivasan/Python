@@ -2,10 +2,9 @@ pipeline {
     agent any
 
     environment {
-        VENV_PATH = '/opt/venv'
-        PATH = "/opt/venv/bin:$PATH"
+        VENV_PATH = './venv'
+        PATH = "./venv/bin:$PATH"
     }
-    
     options {
         buildDiscarder(logRotator(
             numToKeepStr: '3', 
