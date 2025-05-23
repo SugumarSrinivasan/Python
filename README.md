@@ -6,14 +6,13 @@ This project implements a Jenkins CI/CD pipeline for a Python application. It in
 
 project/
 ├── app/
-│ └── main.py
+│   └── main.py
 ├── tests/
-│ └── test_main.py
+│   └── test_main.py
 ├── requirements.txt
 ├── Dockerfile
 ├── Jenkinsfile
 └── README.md
-
 
 ## 🔧 Jenkins Pipeline Stages
 
