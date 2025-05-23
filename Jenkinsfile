@@ -179,11 +179,12 @@ pipeline {
                     allowMissing: false
                 ])
             }        
-        success {
-            echo 'Build succeeded!'
-        }
-        failure {
-            echo 'Build failed!'
-        }
-    }    
+            success {
+                echo 'Build succeeded!'
+            }
+            failure {
+                echo 'Build failed!'
+            }
+        }    
+    }
 }
