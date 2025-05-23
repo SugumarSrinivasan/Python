@@ -27,9 +27,9 @@ pipeline {
                 dir('project') {
                     sh 'Deploying application...'
                     sh '${VENV_PATH}/bin/python app/main.py'
+                }
             }
         }
-    }
     post {
         success {
             echo 'Build succeeded!'
@@ -38,4 +38,5 @@ pipeline {
             echo 'Build failed!'
         }
     }
+  }
 }
