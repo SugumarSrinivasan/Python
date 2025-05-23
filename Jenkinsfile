@@ -40,7 +40,7 @@ pipeline {
             steps {
                 dir('project'){
                 echo 'Running tests...'
-                sh 'python -m pytest tests/test_main.py'
+                sh 'python -m pytest --cov=app tests/ --cov-report=html'
                 }
             }
         }
@@ -50,7 +50,7 @@ pipeline {
                 dir('project') {
                     sh '''#!/bin/bash
                         echo "Running Pylint..."
-                        pylint $(find . -name "*.py") || true
+                        pylint app tests || true
                     '''
                 }
             }
@@ -61,7 +61,7 @@ pipeline {
                 dir('project') {
                     sh '''
                     mkdir -p dist
-                    zip -r dist/app.zip app venv tests Dockerfile Jenkinsfile requirements.txt README.md
+                    zip -r dist/app.zip app tests Dockerfile Jenkinsfile requirements.txt README.md
                     '''
                     archiveArtifacts artifacts: 'dist/app.zip', fingerprint: true
                 }
@@ -152,7 +152,16 @@ pipeline {
         
                         echo "Running application..."
                         cd deployed_app
-                        ../project/venv/bin/python app/main.py
+                        
+                        # Set up and activate virtual environment
+                        python3 -m venv venv
+                        source venv/bin/activate
+                        
+                        # Install dependencies
+                        pip install -r requirements.txt
+
+                        # Run the application
+                        python app/main.py
                         """
                     }
                 }
@@ -160,6 +169,16 @@ pipeline {
         }
     }
     post {
+        always {
+            cleanWs()
+            dir('project') {
+                publishHTML([
+                    reportDir: 'htmlcov',
+                    reportFiles: 'index.html',
+                    reportName: 'Code Coverage Report',
+                    allowMissing: false
+                ])
+            }        
         success {
             echo 'Build succeeded!'
         }
