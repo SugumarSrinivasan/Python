@@ -169,25 +169,25 @@ pipeline {
                 }
             }
         }
-        post {
-            always {
-                cleanWs()
-                archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
-                dir('project') {
-                    publishHTML([
-                        reportDir: 'htmlcov',
-                        reportFiles: 'index.html',
-                        reportName: 'Code Coverage Report',
-                        allowMissing: false
-                    ])
-                } 
-            }      
-            success {
-                echo 'Build succeeded!'
-            }
-            failure {
-                echo 'Build failed!'
-            }   
+    }
+    post {
+        always {
+            cleanWs()
+            archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
+            dir('project') {
+                publishHTML([
+                    reportDir: 'htmlcov',
+                    reportFiles: 'index.html',
+                    reportName: 'Code Coverage Report',
+                    allowMissing: false
+                ])
+            } 
+        }      
+        success {
+            echo 'Build succeeded!'
         }
+        failure {
+            echo 'Build failed!'
+        }   
     }
 }
