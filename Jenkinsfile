@@ -50,7 +50,7 @@ pipeline {
                 dir('project') {
                     sh '''#!/bin/bash
                         echo "Running Pylint..."
-                        ./venv/bin/pylint app tests || true
+                        pylint $(find . -name "*.py") || true
                     '''
                 }
             }
@@ -141,13 +141,7 @@ pipeline {
                         curl -s -H "Authorization: token ${GH_TOKEN}" \\
                              https://api.github.com/repos/${repo}/releases/latest > latest_release.json
         
-                        asset_url=\$(python3 -c "
-                        import sys, json
-                        data = json.load(open('latest_release.json'))
-                        assets = data.get('assets', [])
-                        urls = [a['browser_download_url'] for a in assets if a['name'] == '${artifactName}']
-                        print(urls[0] if urls else sys.exit('ERROR: Artifact ${artifactName} not found in latest release.'))
-                        ")
+                        asset_url=\$(python3 -c "import sys, json; data=json.load(open('latest_release.json')); assets=data.get('assets', []); urls=[a['browser_download_url'] for a in assets if a['name'] == '${artifactName}']; print(urls[0] if urls else sys.exit('ERROR: Artifact ${artifactName} not found in latest release.'))")
         
                         echo "Downloading artifact from: \$asset_url"
                         curl -L -H "Authorization: token ${GH_TOKEN}" -o ${artifactName} "\$asset_url"
