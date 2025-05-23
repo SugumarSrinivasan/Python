@@ -44,6 +44,16 @@ pipeline {
                 }
             }
         }
+        stage('Scan') {
+            steps {
+                dir('project') {
+                    sh '''#!/bin/bash
+                        echo "Running Pylint..."
+                        pylint $(find . -name "*.py") || true
+                    '''
+                }
+            }
+        }
 
         stage('Publish') {
             steps {
