@@ -23,8 +23,7 @@ pipeline {
         stage('Build') {          
             steps {
                 script {
-                    sh '''
-                    pip install --upgrade pip
+                    sh '''#!/bin/bash
                     if [ ! -d "${VENV_PATH}" ]; then
                         python3 -m venv ${VENV_PATH}
                         source ${VENV_PATH}/bin/activate
@@ -68,7 +67,7 @@ pipeline {
                 echo 'Deploying the application...'
                 dir('project') {
                     sh '''#!/bin/bash
-                        python3 app/main.py
+                        ${VENV_PATH}/bin/python app/main.py
                         echo "Application deployed successfully!"
                     '''
                 }
