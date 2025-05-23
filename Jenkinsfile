@@ -60,13 +60,16 @@ pipeline {
 
         stage('Package') {
             steps {
+                dir('project') {
                     sh '''#!/bin/bash
+                    cp ../requirements.txt .
                     mkdir -p dist
-                    zip -r dist/app.zip project/app project/tests Dockerfile Jenkinsfile requirements.txt README.md
+                    zip -r dist/app.zip app tests requirements.txt Dockerfile Jenkinsfile README.md
                     '''
                     archiveArtifacts artifacts: 'dist/app.zip', fingerprint: true
                 }
             }
+        }
 
         stage('Publish') {
             steps {
@@ -75,7 +78,7 @@ pipeline {
                         def tagName = "v1.0.${env.BUILD_NUMBER}"
                         def releaseName = "Release ${tagName}"
                         def repo = "SugumarSrinivasan/Python"
-                        def artifactPath = "dist/app.zip" // Change this to your artifact path
+                        def artifactPath = "project/dist/app.zip" // Change this to your artifact path
 
                         sh """#!/bin/bash
                         set -e
@@ -151,7 +154,7 @@ pipeline {
                         unzip -o ${artifactName} -d deployed_app
         
                         echo "Running application..."
-                        cd deployed_app
+                        cd deployed_app/project
                         
                         # Set up and activate virtual environment
                         python3 -m venv venv
