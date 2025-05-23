@@ -185,6 +185,18 @@ Regardless of build result:
 - Code coverage reports are archived.
 - Workspace is cleaned up.
 
+## Reference
+- [Git and GitHub](https://learn.microsoft.com/en-us/training/paths/github-foundations/)
+- [Jenkins](https://www.jenkins.io/doc/tutorials/)
+- [Docker](https://docs.docker.com/get-started/)
+- [Python Tutorial](https://www.w3schools.com/python/)
+
+## YouTube
+- [Git and GitHub Tutorial in Tamil](https://www.youtube.com/watch?v=VIBWdLLq9kQ)
+- [What is Docker?](https://www.youtube.com/watch?v=jPdIRX6q4jA&list=PLy7NrYWoggjzfAHlUusx2wuDwfCrmJYcs)
+- [Python Tutorial for Beginners](https://www.youtube.com/watch?v=t8pPdKYpowI&list=PLy7NrYWoggjxiwNyXNEM8gt1d5Kd2Uh-x)
+- [Run Jenkins in Docker Container](https://www.youtube.com/watch?v=pMO26j2OUME)
+
 ## ✍️ Author
 
 Sugumar Srinivasan
