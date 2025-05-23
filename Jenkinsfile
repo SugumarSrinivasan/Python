@@ -173,7 +173,6 @@ pipeline {
     }
     post {
         always {
-            cleanWs()
             archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
             dir('project') {
                 publishHTML([
@@ -182,6 +181,7 @@ pipeline {
                     reportName: 'Code Coverage Report',
                     allowMissing: false
                 ])
+            cleanWs()
             } 
         }      
         success {
