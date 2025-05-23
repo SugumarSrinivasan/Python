@@ -50,7 +50,7 @@ pipeline {
                 dir('project') {
                     sh '''#!/bin/bash
                         echo "Running Pylint..."
-                        pylint $(find . -name "*.py") || true
+                        ./venv/bin/pylint $(find . -name "*.py") || true
                     '''
                 }
             }
