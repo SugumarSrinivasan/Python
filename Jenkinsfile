@@ -25,7 +25,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 dir('project') {
-                    sh 'Deploying application...'
+                    echo 'Deploying application...'
                     sh '${VENV_PATH}/bin/python app/main.py'
                 }
             }
