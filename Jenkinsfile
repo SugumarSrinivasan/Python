@@ -41,8 +41,7 @@ pipeline {
                 dir('project'){
                 echo 'Running tests...'
                 sh '''
-                source ${VENV_PATH}/bin/activate
-                python -m pytest --cov=app tests/ --cov-report=html
+                ./venv/bin/python -m pytest --cov=app tests/ --cov-report=html
                 '''
                 }
             }
