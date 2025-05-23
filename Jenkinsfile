@@ -60,15 +60,13 @@ pipeline {
 
         stage('Package') {
             steps {
-                dir('project') {
                     sh '''#!/bin/bash
                     mkdir -p dist
-                    zip -r dist/app.zip app tests Dockerfile Jenkinsfile requirements.txt README.md
+                    zip -r dist/app.zip project/app project/tests Dockerfile Jenkinsfile requirements.txt README.md
                     '''
                     archiveArtifacts artifacts: 'dist/app.zip', fingerprint: true
                 }
             }
-        }
 
         stage('Publish') {
             steps {
@@ -77,7 +75,7 @@ pipeline {
                         def tagName = "v1.0.${env.BUILD_NUMBER}"
                         def releaseName = "Release ${tagName}"
                         def repo = "SugumarSrinivasan/Python"
-                        def artifactPath = "project/dist/app.zip" // Change this to your artifact path
+                        def artifactPath = "dist/app.zip" // Change this to your artifact path
 
                         sh """#!/bin/bash
                         set -e
