@@ -1,4 +1,4 @@
-# Python CI/CD Pipeline with Jenkins
+# End-to-End Python CI/CD Pipeline with Jenkins and GitHub Integration
 
 This project implements a Jenkins CI/CD pipeline for a Python application. It includes steps for building, testing, linting, packaging, publishing to GitHub Releases, and deploying with manual approval.
 
