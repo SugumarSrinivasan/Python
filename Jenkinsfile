@@ -57,7 +57,7 @@ pipeline {
 
         stage('Publish') {
             steps {
-                withCredentials([string(credentialsId: 'github_global', variable: 'github_global')]) {
+                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GH_TOKEN')]) {
                     script {
                         def tagName = "v1.0.${env.BUILD_NUMBER}"
                         def releaseName = "Release ${tagName}"
