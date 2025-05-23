@@ -61,7 +61,7 @@ pipeline {
         stage('Package') {
             steps {
                 dir('project') {
-                    sh '''
+                    sh '''#!/bin/bash
                     mkdir -p dist
                     zip -r dist/app.zip app tests Dockerfile Jenkinsfile requirements.txt README.md
                     '''
@@ -79,7 +79,7 @@ pipeline {
                         def repo = "SugumarSrinivasan/Python"
                         def artifactPath = "project/dist/app.zip" // Change this to your artifact path
 
-                        sh """
+                        sh """#!/bin/bash
                         set -e
                         echo "Creating release ${tagName} on GitHub..."
                         
@@ -137,7 +137,7 @@ pipeline {
                         def repo = "SugumarSrinivasan/Python"
                         def artifactName = "app.zip"
         
-                        sh """
+                        sh """#!/bin/bash
                         set -e
                         echo "Fetching latest release info from GitHub..."
                         curl -s -H "Authorization: token ${GH_TOKEN}" \\
@@ -169,24 +169,25 @@ pipeline {
                 }
             }
         }
-    }
-    post {
-        always {
-            cleanWs()
-            dir('project') {
-                publishHTML([
-                    reportDir: 'htmlcov',
-                    reportFiles: 'index.html',
-                    reportName: 'Code Coverage Report',
-                    allowMissing: false
-                ])
-            }        
-            success {
-                echo 'Build succeeded!'
-            }
-            failure {
-                echo 'Build failed!'
-            }
-        }    
+        post {
+            always {
+                cleanWs()
+                archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
+                dir('project') {
+                    publishHTML([
+                        reportDir: 'htmlcov',
+                        reportFiles: 'index.html',
+                        reportName: 'Code Coverage Report',
+                        allowMissing: false
+                    ])
+                }        
+                success {
+                    echo 'Build succeeded!'
+                }
+                failure {
+                    echo 'Build failed!'
+                }
+            }    
+        }
     }
 }
