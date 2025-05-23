@@ -154,7 +154,7 @@ pipeline {
                         unzip -o ${artifactName} -d deployed_app
         
                         echo "Running application..."
-                        cd deployed_app/project
+                        cd deployed_app
                         
                         # Set up and activate virtual environment
                         python3 -m venv venv
@@ -173,6 +173,7 @@ pipeline {
     }
     post {
         always {
+            cleanWs()
             archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
             dir('project') {
                 publishHTML([
@@ -181,7 +182,6 @@ pipeline {
                     reportName: 'Code Coverage Report',
                     allowMissing: false
                 ])
-            cleanWs()
             } 
         }      
         success {
