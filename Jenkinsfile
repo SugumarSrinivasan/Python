@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        VENV_PATH = './venv'
-        PATH = "./venv/bin:$PATH"
+        VENV_PATH = './project/venv'
+        PATH = "./project/venv/bin:$PATH"
     }
     options {
         buildDiscarder(logRotator(
@@ -44,6 +44,7 @@ pipeline {
                 }
             }
         }
+
         stage('Scan') {
             steps {
                 dir('project') {
@@ -51,6 +52,18 @@ pipeline {
                         echo "Running Pylint..."
                         pylint $(find . -name "*.py") || true
                     '''
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                dir('project') {
+                    sh '''
+                    mkdir -p dist
+                    zip -r dist/app.zip app venv tests Dockerfile Jenkinsfile requirements.txt README.md
+                    '''
+                    archiveArtifacts artifacts: 'dist/app.zip', fingerprint: true
                 }
             }
         }
@@ -63,12 +76,12 @@ pipeline {
                         def releaseName = "Release ${tagName}"
                         def repo = "SugumarSrinivasan/Python"
                         def artifactPath = "project/dist/app.zip" // Change this to your artifact path
-        
+
                         sh """
+                        set -e
                         echo "Creating release ${tagName} on GitHub..."
-        
-                        # Create a new release
-                        curl -s -X POST https://api.github.com/repos/${repo}/releases \\
+                        
+                        release_response=\$(curl -s -w "%{http_code}" -o release.json -X POST https://api.github.com/repos/${repo}/releases \\
                             -H "Authorization: token ${GH_TOKEN}" \\
                             -H "Content-Type: application/json" \\
                             -d '{
@@ -78,16 +91,29 @@ pipeline {
                                 "body": "Automated release from Jenkins",
                                 "draft": false,
                                 "prerelease": false
-                            }' > release.json
-        
-                        # Extract the upload URL from the release JSON
+                            }')
+                        
+                        if [ "\$release_response" -ne 201 ]; then
+                            echo "Failed to create GitHub release. Status code: \$release_response"
+                            cat release.json
+                            exit 1
+                        fi
+                        
                         upload_url=\$(cat release.json | python3 -c "import sys, json; print(json.load(sys.stdin)['upload_url'].split('{')[0])")
-        
+                        
                         echo "Uploading artifact ${artifactPath}..."
-                        curl -s -X POST "\${upload_url}?name=\$(basename ${artifactPath})" \\
+                        upload_response=\$(curl -s -w "%{http_code}" -o upload_result.json -X POST "\${upload_url}?name=\$(basename ${artifactPath})" \\
                             -H "Authorization: token ${GH_TOKEN}" \\
                             -H "Content-Type: application/zip" \\
-                            --data-binary @${artifactPath}
+                            --data-binary @${artifactPath})
+                        
+                        if [ "\$upload_response" -ne 201 ]; then
+                            echo "Artifact upload failed with code \$upload_response"
+                            cat upload_result.json
+                            exit 1
+                        fi
+                        
+                        echo "Artifact uploaded successfully."
                         """
                     }
                 }
@@ -95,32 +121,56 @@ pipeline {
         }
         stage('DEVDeploy') {
             steps {
-                script {
-                    def userInput = input(
-                        id: 'DeployApproval', message: 'Deploy to DEV?', ok: 'Approve',
-                        parameters: [
-                            string(name: 'Deployer', defaultValue: '', description: 'Enter your name'),
-                            choice(name: 'Environment', choices: ['DEV', 'QA', 'PROD'], description: 'Choose environment')
-                        ]
-                    )
-                    echo "Approved by: ${userInput['Deployer']} for environment: ${userInput['Environment']}"
-                }                
-                echo 'Deploying the application...'
-                dir('project') {
-                    sh '''#!/bin/bash
-                        python app/main.py
-                        echo "Application deployed successfully!"
-                    '''
+                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GH_TOKEN')]) {
+                    script {
+                        def userInput = input(
+                            id: 'DeployApproval', message: 'Deploy to DEV?', ok: 'Approve',
+                            parameters: [
+                                string(name: 'Deployer', defaultValue: '', description: 'Enter your name'),
+                                choice(name: 'Environment', choices: ['DEV', 'QA', 'PROD'], description: 'Choose environment')
+                            ]
+                        )
+                        echo "Approved by: ${userInput['Deployer']} for environment: ${userInput['Environment']}"
+        
+                        def repo = "SugumarSrinivasan/Python"
+                        def artifactName = "app.zip"
+        
+                        sh """
+                        set -e
+                        echo "Fetching latest release info from GitHub..."
+                        curl -s -H "Authorization: token ${GH_TOKEN}" \\
+                             https://api.github.com/repos/${repo}/releases/latest > latest_release.json
+        
+                        asset_url=\$(python3 -c "
+                        import sys, json
+                        data = json.load(open('latest_release.json'))
+                        assets = data.get('assets', [])
+                        urls = [a['browser_download_url'] for a in assets if a['name'] == '${artifactName}']
+                        print(urls[0] if urls else sys.exit('ERROR: Artifact ${artifactName} not found in latest release.'))
+                        ")
+        
+                        echo "Downloading artifact from: \$asset_url"
+                        curl -L -H "Authorization: token ${GH_TOKEN}" -o ${artifactName} "\$asset_url"
+        
+                        echo "Unzipping artifact..."
+                        rm -rf deployed_app && mkdir deployed_app
+                        unzip -o ${artifactName} -d deployed_app
+        
+                        echo "Running application..."
+                        cd deployed_app
+                        ./project/venv/bin/python app/main.py
+                        """
+                    }
                 }
             }
-        }
-    }
-    post {
-        success {
-            echo 'Build succeeded!'
-        }
-        failure {
-            echo 'Build failed!'
+        } 
+        post {
+            success {
+                echo 'Build succeeded!'
+            }
+            failure {
+                echo 'Build failed!'
+            }
         }
     }
 }
