@@ -4,15 +4,7 @@ This project implements a Jenkins CI/CD pipeline for a Python application. It in
 
 ## 📁 Project Structure
 
-project/
-├── app/
-│   └── main.py
-├── tests/
-│   └── test_main.py
-├── requirements.txt
-├── Dockerfile
-├── Jenkinsfile
-└── README.md
+<img width="1395" alt="image" src="https://github.com/user-attachments/assets/37af8843-376d-4107-a01a-de63907fa4da" />
 
 ## 🔧 Jenkins Pipeline Stages
 
