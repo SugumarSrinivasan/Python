@@ -40,7 +40,7 @@ pipeline {
             steps {
                 dir('project'){
                 echo 'Running tests...'
-                sh '${VENV_PATH}/bin/python -m pytest tests/test_main.py'
+                sh 'python -m pytest tests/test_main.py'
                 }
             }
         }
@@ -66,7 +66,7 @@ pipeline {
                 echo 'Deploying the application...'
                 dir('project') {
                     sh '''#!/bin/bash
-                        ${VENV_PATH}/bin/python app/main.py
+                        python app/main.py
                         echo "Application deployed successfully!"
                     '''
                 }
