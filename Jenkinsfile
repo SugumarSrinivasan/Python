@@ -23,8 +23,17 @@ pipeline {
         stage('Build') {          
             steps {
                 script {
-                    // Set display name: e.g., feature-1.14
-                    echo 'Building the application...'
+                    sh '''
+                    pip install --upgrade pip
+                    if [ ! -d "${VENV_PATH}" ]; then
+                        python3 -m venv ${VENV_PATH}
+                        source ${VENV_PATH}/bin/activate
+                        pip install -r requirements.txt
+                    else
+                        source ${VENV_PATH}/bin/activate
+                        pip install --upgrade -r requirements.txt
+                    fi
+                    '''
                 }  
             }
         }
