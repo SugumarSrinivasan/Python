@@ -40,7 +40,7 @@ pipeline {
             steps {
                 dir('project'){
                 echo 'Running tests...'
-                sh '''
+                sh '''#!/bin/bash
                 ./venv/bin/python -m pytest --cov=app tests/ --cov-report=html
                 '''
                 }
@@ -52,7 +52,7 @@ pipeline {
                 dir('project') {
                     sh '''#!/bin/bash
                         echo "Running Pylint..."
-                        pylint app tests || true
+                        ./venv/bin/python -m pylint app tests || true
                     '''
                 }
             }
