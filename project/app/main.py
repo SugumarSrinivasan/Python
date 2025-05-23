@@ -12,8 +12,8 @@ def divide(a, b):
         raise ValueError("Cannot divide by zero")
     return a / b
 
-print("Sum of 5 and 3 is:"+ add(5, 3))
-print("Difference of 5 and 3 is:"+ subtract(5, 3))
-print("Product of 5 and 3 is:"+ multiply(5, 3))
-print("Quotient of 5 and 3 is:"+ divide(5, 3))
-print("Quotient of 5 and 0 is:"+ divide(5, 0))
+print("Sum of 5 and 3 is:"+ str(add(5, 3)))
+print("Difference of 5 and 3 is:"+ str(subtract(5, 3)))
+print("Product of 5 and 3 is:"+ str(multiply(5, 3)))
+print("Quotient of 5 and 3 is:"+ str(divide(5, 3)))
+print("Quotient of 5 and 0 is:"+ str(divide(5, 0)))
