@@ -48,6 +48,7 @@ pipeline {
             steps {
                 dir('project') {
                     sh '''#!/bin/bash
+                        source ${VENV_PATH}/bin/activate
                         echo "Running Pylint..."
                         pylint $(find . -name "*.py") || true
                     '''
