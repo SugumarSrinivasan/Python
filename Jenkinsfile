@@ -1,33 +1,32 @@
 pipeline {
     agent any
 
+    environment {
+        VENV_PATH = '/opt/venv'
+        PATH = "/opt/venv/bin:$PATH"
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/SugumarSrinivasan/Jenkins.git'
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                echo 'Installing dependencies...'
-                sh 'pip3 install -r requirements.txt'
+                git branch: 'main', url: 'https://github.com/SugumarSrinivasan/Python.git'
             }
         }
 
         stage('Test') {
             steps {
+                dir('project'){
                 echo 'Running tests...'
-                sh 'pytest tests/test_main.py'
+                sh '${VENV_PATH}/bin/python -m pytest tests/test_main.py'
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Simulating deployment step...'
-                // Add deployment logic here (e.g., copy files, call scripts, etc.)
-                sh 'echo "Deploying application..."'
-                sh 'python3 app/main.py'
+                dir('project') {
+                    sh 'Deploying application...'
+                    sh '${VENV_PATH}/bin/python app/main.py'
             }
         }
     }
