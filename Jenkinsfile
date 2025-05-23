@@ -49,7 +49,7 @@ pipeline {
                 dir('project') {
                     sh '''#!/bin/bash
                         echo "Running Pylint..."
-                        ../venv/bin/pylint $(find . -name "*.py") || true
+                        pylint $(find . -name "*.py") || true
                     '''
                 }
             }
@@ -57,10 +57,42 @@ pipeline {
 
         stage('Publish') {
             steps {
-                echo 'Publishing artifacts to Artifactory...'  
-                // Insert Artifactory publish command here
+                withCredentials([string(credentialsId: 'github_global', variable: 'github_global')]) {
+                    script {
+                        def tagName = "v1.0.${env.BUILD_NUMBER}"
+                        def releaseName = "Release ${tagName}"
+                        def repo = "SugumarSrinivasan/Python"
+                        def artifactPath = "project/dist/app.zip" // Change this to your artifact path
+        
+                        sh """
+                        echo "Creating release ${tagName} on GitHub..."
+        
+                        # Create a new release
+                        curl -s -X POST https://api.github.com/repos/${repo}/releases \\
+                            -H "Authorization: token ${GH_TOKEN}" \\
+                            -H "Content-Type: application/json" \\
+                            -d '{
+                                "tag_name": "${tagName}",
+                                "target_commitish": "main",
+                                "name": "${releaseName}",
+                                "body": "Automated release from Jenkins",
+                                "draft": false,
+                                "prerelease": false
+                            }' > release.json
+        
+                        # Extract the upload URL from the release JSON
+                        upload_url=\$(cat release.json | python3 -c "import sys, json; print(json.load(sys.stdin)['upload_url'].split('{')[0])")
+        
+                        echo "Uploading artifact ${artifactPath}..."
+                        curl -s -X POST "\${upload_url}?name=\$(basename ${artifactPath})" \\
+                            -H "Authorization: token ${GH_TOKEN}" \\
+                            -H "Content-Type: application/zip" \\
+                            --data-binary @${artifactPath}
+                        """
+                    }
+                }
             }
-        }   
+        }
         stage('DEVDeploy') {
             steps {
                 script {
