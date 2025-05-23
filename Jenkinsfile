@@ -24,9 +24,8 @@ pipeline {
             steps {
                 script {
                     // Set display name: e.g., feature-1.14
-                    currentBuild.displayName = "${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
+                    echo 'Building the application...'
                 }  
-                echo 'Building the application...'
             }
         }
 
