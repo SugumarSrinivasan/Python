@@ -2,3 +2,4 @@ pytest
 pylint
 pytest-cov
 pylint-json2html
+bandit
