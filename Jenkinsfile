@@ -60,7 +60,7 @@ pipeline {
                         ./venv/bin/bandit -r app -f html -o bandit-report.html || true
 
                         echo "Running Safety dependency vulnerability scan..."
-                        ./venv/bin/safety check --full-report > safety-report.txt || true
+                        ./venv/bin/safety scan -r requirements.txt --full-report > safety-report.txt || true
                         echo "<pre>$(cat safety-report.txt)</pre>" > safety-report.html
                     '''
                 }
