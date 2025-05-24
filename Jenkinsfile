@@ -68,12 +68,12 @@ pipeline {
                 withCredentials([string(credentialsId: 'SAFETY_API_KEY', variable: 'SAFETY_API_KEY')]) {
                     dir('project') {
                         sh '''#!/bin/bash
-        
-                        echo "Running Safety vulnerability scan..."
-                        SAFETY_API_KEY=$SAFETY_API_KEY ./venv/bin/safety scan -r requirements.txt -o safety-report.html --format html --no-input || echo "Safety scan failed"
+                              set -e
+                              echo "Running Safety vulnerability scan..."
+                              SAFETY_API_KEY=$SAFETY_API_KEY ./venv/bin/safety scan -r requirements.txt -o safety-report.html --format html --no-input || echo "Safety scan failed"
 
-                        echo "Verifying if safety-report.html was created:"
-                        ls -la safety-report.html
+                              echo "Verifying if safety-report.html was created:"
+                              ls -la safety-report.html
                         '''
                     }
                 }
