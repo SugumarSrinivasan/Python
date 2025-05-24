@@ -58,15 +58,26 @@ pipeline {
 
                         echo "Running Bandit security scan..."
                         ./venv/bin/bandit -r app -f html -o bandit-report.html || true
-
-                        echo "Running Safety dependency vulnerability scan..."
-                        ./venv/bin/safety scan -r requirements.txt --full-report > safety-report.txt || true
-                        echo "<pre>$(cat safety-report.txt)</pre>" > safety-report.html
                     '''
                 }
             }
         }
 
+        stage('Safety Dependency Scan') {
+            steps {
+                withCredentials([string(credentialsId: 'SAFETY_API_KEY', variable: 'SAFETY_API_KEY')]) {
+                    dir('project') {
+                        sh '''#!/bin/bash
+                        echo "Authenticating with Safety..."
+                        ./venv/bin/safety auth login --api-key $SAFETY_API_KEY
+        
+                        echo "Running Safety vulnerability scan..."
+                        ./venv/bin/safety scan -r requirements.txt -o safety-report.html || true
+                        '''
+                    }
+                }
+            }
+        }
         stage('Package') {
             steps {
                 dir('project') {
@@ -212,12 +223,12 @@ pipeline {
                     allowMissing: false
                 ])
                 publishHTML([
-                reportDir: '.',
-                reportFiles: 'safety-report.html',
-                reportName: 'Safety Dependency Report',
-                keepAll: true,
-                alwaysLinkToLastBuild: true,
-                allowMissing: false
+                    reportDir: '.',
+                    reportFiles: 'safety-report.html',
+                    reportName: 'Safety Dependency Report',
+                    keepAll: true,
+                    alwaysLinkToLastBuild: true,
+                    allowMissing: false
                 ])           
             cleanWs()
             } 
