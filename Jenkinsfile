@@ -55,6 +55,13 @@ pipeline {
                         ./venv/bin/python -m pylint app tests --output-format=json > pylint-report.json || true
                         cat pylint-report.json
                         ./venv/bin/pylint-json2html -f json -o pylint-report.html pylint-report.json
+
+                        echo "Running Bandit security scan..."
+                        ./venv/bin/bandit -r app -f html -o bandit-report.html || true
+
+                        echo "Running Safety dependency vulnerability scan..."
+                        ./venv/bin/safety check --full-report > safety-report.txt || true
+                        echo "<pre>$(cat safety-report.txt)</pre>" > safety-report.html
                     '''
                 }
             }
@@ -177,6 +184,8 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
             archiveArtifacts artifacts: 'project/pylint-report.html', fingerprint: true
+            archiveArtifacts artifacts: 'project/bandit-report.html', fingerprint: true
+            archiveArtifacts artifacts: 'project/safety-report.txt,project/safety-report.html', fingerprint: true
             dir('project') {
                 publishHTML([
                     reportDir: 'htmlcov',
@@ -193,7 +202,23 @@ pipeline {
                     keepAll: true,
                     alwaysLinkToLastBuild: true,
                     allowMissing: false
-                ])                
+                ])
+                publishHTML([
+                    reportDir: '.',
+                    reportFiles: 'bandit-report.html',
+                    reportName: 'Bandit Security Report',
+                    keepAll: true,
+                    alwaysLinkToLastBuild: true,
+                    allowMissing: false
+                ])
+                publishHTML([
+                reportDir: '.',
+                reportFiles: 'safety-report.html',
+                reportName: 'Safety Dependency Report',
+                keepAll: true,
+                alwaysLinkToLastBuild: true,
+                allowMissing: false
+                ])           
             cleanWs()
             } 
         }      
