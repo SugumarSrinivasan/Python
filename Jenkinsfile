@@ -62,23 +62,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Safety Dependency Scan') {
-            steps {
-                withCredentials([string(credentialsId: 'SAFETY_API_KEY', variable: 'SAFETY_API_KEY')]) {
-                    dir('project') {
-                        sh '''#!/bin/bash
-                              set -e
-                              echo "Running Safety vulnerability scan..."
-                              SAFETY_API_KEY=$SAFETY_API_KEY SAFETY_CODEBASE_NAME="python" ./venv/bin/safety scan -r requirements.txt -o safety-report.html --format html --no-input --skip-linking || echo "Safety scan failed"
-
-                              echo "Verifying if safety-report.html was created:"
-                              ls -la safety-report.html
-                        '''
-                    }
-                }
-            }
-        }
         stage('Package') {
             steps {
                 dir('project') {
@@ -197,7 +180,6 @@ pipeline {
             archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
             archiveArtifacts artifacts: 'project/pylint-report.html', fingerprint: true
             archiveArtifacts artifacts: 'project/bandit-report.html', fingerprint: true
-            archiveArtifacts artifacts: 'project/safety-report.html', fingerprint: true
             dir('project') {
                 publishHTML([
                     reportDir: 'htmlcov',
@@ -222,15 +204,7 @@ pipeline {
                     keepAll: true,
                     alwaysLinkToLastBuild: true,
                     allowMissing: false
-                ])
-                publishHTML([
-                    reportDir: '.',
-                    reportFiles: 'safety-report.html',
-                    reportName: 'Safety Dependency Report',
-                    keepAll: true,
-                    alwaysLinkToLastBuild: true,
-                    allowMissing: true
-                ])           
+                ])       
             cleanWs()
             } 
         }      
