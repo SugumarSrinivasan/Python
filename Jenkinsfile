@@ -181,12 +181,14 @@ pipeline {
                     reportDir: 'htmlcov',
                     reportFiles: 'index.html',
                     reportName: 'Code Coverage Report',
+                    keepAll: true,
                     allowMissing: false
                 ])
                 publishHTML([
                     reportDir: '.',
                     reportFiles: 'pylint-report.html',
                     reportName: 'Pylint Report',
+                    keepAll: true,
                     allowMissing: false
                 ])                
             cleanWs()
