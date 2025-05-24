@@ -72,7 +72,7 @@ pipeline {
                         ./venv/bin/safety auth login --api-key $SAFETY_API_KEY
         
                         echo "Running Safety vulnerability scan..."
-                        ./venv/bin/safety scan -r requirements.txt -o safety-report.html || true
+                        ./venv/bin/safety scan -r requirements.txt -o safety-report.html --format html || true
                         '''
                     }
                 }
@@ -196,7 +196,7 @@ pipeline {
             archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
             archiveArtifacts artifacts: 'project/pylint-report.html', fingerprint: true
             archiveArtifacts artifacts: 'project/bandit-report.html', fingerprint: true
-            archiveArtifacts artifacts: 'project/safety-report.txt,project/safety-report.html', fingerprint: true
+            archiveArtifacts artifacts: 'project/safety-report.html', fingerprint: true
             dir('project') {
                 publishHTML([
                     reportDir: 'htmlcov',
