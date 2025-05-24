@@ -1,3 +1,4 @@
+"""This module contains the main application logic."""
 def add(a, b):
     """This function does addition of two numbers."""
     return a + b
