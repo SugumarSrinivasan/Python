@@ -53,6 +53,7 @@ pipeline {
                     sh '''#!/bin/bash
                         echo "Running Pylint..."
                         ./venv/bin/python -m pylint app tests --output-format=json > pylint-report.json || true
+                        cat pylint-report.json
                         ./venv/bin/pylint-json2html -f json -o pylint-report.html pylint-report.json
                     '''
                 }
