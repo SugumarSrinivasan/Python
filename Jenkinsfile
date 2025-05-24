@@ -72,7 +72,10 @@ pipeline {
                         ./venv/bin/safety auth login --api-key $SAFETY_API_KEY
         
                         echo "Running Safety vulnerability scan..."
-                        ./venv/bin/safety scan -r requirements.txt -o safety-report.html --format html || true
+                        ./venv/bin/safety scan -r requirements.txt -o safety-report.html --format html || echo "Safety scan failed"
+
+                        echo "Verifying if safety-report.html was created:"
+                        ls -la safety-report.html
                         '''
                     }
                 }
@@ -228,7 +231,7 @@ pipeline {
                     reportName: 'Safety Dependency Report',
                     keepAll: true,
                     alwaysLinkToLastBuild: true,
-                    allowMissing: false
+                    allowMissing: true
                 ])           
             cleanWs()
             } 
