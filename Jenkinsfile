@@ -182,6 +182,7 @@ pipeline {
                     reportFiles: 'index.html',
                     reportName: 'Code Coverage Report',
                     keepAll: true,
+                    alwaysLinkToLastBuild: true,
                     allowMissing: false
                 ])
                 publishHTML([
@@ -189,6 +190,7 @@ pipeline {
                     reportFiles: 'pylint-report.html',
                     reportName: 'Pylint Report',
                     keepAll: true,
+                    alwaysLinkToLastBuild: true,
                     allowMissing: false
                 ])                
             cleanWs()
