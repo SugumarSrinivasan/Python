@@ -26,7 +26,7 @@ pipeline {
                     if [ ! -d "${VENV_PATH}" ]; then
                         python3 -m venv ${VENV_PATH}
                         source ${VENV_PATH}/bin/activate
-                        pip install -r requirements.txt
+                        pip install -r requirements.txt --upgrade
                     else
                         source ${VENV_PATH}/bin/activate
                         pip install --upgrade -r requirements.txt
