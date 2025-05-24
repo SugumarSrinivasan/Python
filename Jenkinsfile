@@ -52,7 +52,8 @@ pipeline {
                 dir('project') {
                     sh '''#!/bin/bash
                         echo "Running Pylint..."
-                        ./venv/bin/python -m pylint app tests || true
+                        ./venv/bin/python -m pylint app tests --output-format=json > pylint-report.json || true
+                        ./venv/bin/pylint-json2html -f json -o pylint-report.html pylint-report.json
                     '''
                 }
             }
@@ -174,6 +175,7 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
+            archiveArtifacts artifacts: 'project/pylint-report.html', fingerprint: true
             dir('project') {
                 publishHTML([
                     reportDir: 'htmlcov',
@@ -181,6 +183,12 @@ pipeline {
                     reportName: 'Code Coverage Report',
                     allowMissing: false
                 ])
+                publishHTML([
+                    reportDir: '.',
+                    reportFiles: 'pylint-report.html',
+                    reportName: 'Pylint Report',
+                    allowMissing: false
+                ])                
             cleanWs()
             } 
         }      
