@@ -41,7 +41,7 @@ pipeline {
                 dir('project'){
                 echo 'Running tests...'
                 sh '''#!/bin/bash
-                ./venv/bin/python -m pytest --cov=app tests/ --cov-report=html
+                ./venv/bin/python -m pytest --cov=app tests/ --cov-report=html --cov-fail-under=80
                 '''
                 }
             }
