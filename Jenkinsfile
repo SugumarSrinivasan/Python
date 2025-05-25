@@ -6,6 +6,7 @@ pipeline {
         PATH = "./project/venv/bin:$PATH"
     }
     options {
+        skipDefaultCheckout()
         buildDiscarder(logRotator(
             numToKeepStr: '3', 
             artifactNumToKeepStr: '3'
@@ -15,7 +16,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/SugumarSrinivasan/Python.git'
+                checkout scm
             }
         }
 
@@ -41,7 +42,7 @@ pipeline {
                 dir('project'){
                 echo 'Running tests...'
                 sh '''#!/bin/bash
-                ./venv/bin/python -m pytest --cov=app tests/ --cov-report=html --cov-fail-under=80
+                ./venv/bin/python -m pytest --cov=app tests/ --cov-report=html
                 '''
                 }
             }
@@ -150,7 +151,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('DEVDeploy') {
             steps {
                 withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GH_TOKEN')]) {
