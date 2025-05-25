@@ -40,7 +40,7 @@ pipeline {
         stage('Test') {
             steps {
                 dir('project'){
-                echo 'Running tests...'
+                echo 'Running pytest...'
                 sh '''#!/bin/bash
                 ./venv/bin/python -m pytest --cov=app tests/ --cov-report=html
                 '''
@@ -152,7 +152,7 @@ pipeline {
             }
         }
 
-        stage('DEVDeploy') {
+        stage('Deploy') {
             steps {
                 withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GH_TOKEN')]) {
                     script {
