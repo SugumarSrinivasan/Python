@@ -95,49 +95,62 @@ pipeline {
                         def releaseName = "Release ${tagName}"
                         def repo = "SugumarSrinivasan/Python"
                         def artifactPath = "project/dist/app.zip" // Change this to your artifact path
-
+        
                         sh """#!/bin/bash
                         set -e
-                        echo "Creating release ${tagName} on GitHub..."
-                        
-                        release_response=\$(curl -s -w "%{http_code}" -o release.json -X POST https://api.github.com/repos/${repo}/releases \\
-                            -H "Authorization: token ${GH_TOKEN}" \\
-                            -H "Content-Type: application/json" \\
-                            -d '{
-                                "tag_name": "${tagName}",
-                                "target_commitish": "main",
-                                "name": "${releaseName}",
-                                "body": "Automated release from Jenkins",
-                                "draft": false,
-                                "prerelease": false
-                            }')
-                        
-                        if [ "\$release_response" -ne 201 ]; then
-                            echo "Failed to create GitHub release. Status code: \$release_response"
-                            cat release.json
-                            exit 1
+        
+                        echo "Checking if release for tag ${tagName} exists on GitHub..."
+                        release_info=\$(curl -s -H "Authorization: token ${GH_TOKEN}" https://api.github.com/repos/${repo}/releases/tags/${tagName})
+        
+                        # Check if release exists by looking for id in JSON response
+                        release_id=\$(echo "\$release_info" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('id',''))" || echo "")
+        
+                        if [ -z "\$release_id" ]; then
+                            echo "Release not found, creating new release ${tagName}..."
+                            release_response=\$(curl -s -w "%{http_code}" -o release.json -X POST https://api.github.com/repos/${repo}/releases \\
+                                -H "Authorization: token ${GH_TOKEN}" \\
+                                -H "Content-Type: application/json" \\
+                                -d '{
+                                    "tag_name": "${tagName}",
+                                    "target_commitish": "main",
+                                    "name": "${releaseName}",
+                                    "body": "Automated release from Jenkins",
+                                    "draft": false,
+                                    "prerelease": false
+                                }')
+        
+                            if [ "\$release_response" -ne 201 ]; then
+                                echo "Failed to create GitHub release. Status code: \$release_response"
+                                cat release.json
+                                exit 1
+                            fi
+        
+                            release_id=\$(cat release.json | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])")
+                        else
+                            echo "Release exists with ID \$release_id. Will upload artifact."
                         fi
-                        
-                        upload_url=\$(cat release.json | python3 -c "import sys, json; print(json.load(sys.stdin)['upload_url'].split('{')[0])")
-                        
-                        echo "Uploading artifact ${artifactPath}..."
-                        upload_response=\$(curl -s -w "%{http_code}" -o upload_result.json -X POST "\${upload_url}?name=\$(basename ${artifactPath})" \\
+        
+                        upload_url="https://uploads.github.com/repos/${repo}/releases/\${release_id}/assets?name=\$(basename ${artifactPath})"
+        
+                        echo "Uploading artifact ${artifactPath} to release ID \$release_id..."
+                        upload_response=\$(curl -s -w "%{http_code}" -o upload_result.json -X POST "\$upload_url" \\
                             -H "Authorization: token ${GH_TOKEN}" \\
                             -H "Content-Type: application/zip" \\
                             --data-binary @${artifactPath})
-                        
+        
                         if [ "\$upload_response" -ne 201 ]; then
                             echo "Artifact upload failed with code \$upload_response"
                             cat upload_result.json
                             exit 1
                         fi
-                        
+        
                         echo "Artifact uploaded successfully."
                         """
                     }
                 }
             }
         }
+        
         stage('DEVDeploy') {
             steps {
                 withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GH_TOKEN')]) {
