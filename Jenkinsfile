@@ -206,6 +206,16 @@ pipeline {
             archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
             archiveArtifacts artifacts: 'project/pylint-report.html', fingerprint: true
             archiveArtifacts artifacts: 'project/bandit-report.html', fingerprint: true
+
+            emailext (
+                to: 'sugumarsks@example.com',
+                subject: "Build ${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: """<p>Job: ${env.JOB_NAME}</p>
+                         <p>Build Number: ${env.BUILD_NUMBER}</p>
+                         <p>Status: ${currentBuild.currentResult}</p>
+                         <p><a href='${env.BUILD_URL}'>Open Build</a></p>""",
+                mimeType: 'text/html'
+            )
             dir('project') {
                 publishHTML([
                     reportDir: 'htmlcov',
@@ -232,8 +242,8 @@ pipeline {
                     allowMissing: false
                 ])       
             cleanWs()
-            } 
-        }      
+            }
+        }     
         success {
             echo 'Build succeeded!'
         }
