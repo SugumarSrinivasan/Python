@@ -48,24 +48,28 @@ pipeline {
         }
 
         stage('Scan') {
-            steps {
-                dir('project') {
-                    parallel(
-                        "Pylint Scan": {
+            parallel {
+                stage('Pylint Scan') {
+                    steps {
+                        dir('project') {
                             sh '''#!/bin/bash
                                 echo "Running Pylint..."
                                 ./venv/bin/python -m pylint app tests --output-format=json > pylint-report.json || true
                                 cat pylint-report.json
                                 ./venv/bin/pylint-json2html -f json -o pylint-report.html pylint-report.json
                             '''
-                        },
-                        "Bandit Scan": {
+                        }
+                    }
+                }
+                stage('Bandit Scan') {
+                    steps {
+                        dir('project') {
                             sh '''#!/bin/bash
                                 echo "Running Bandit security scan..."
                                 ./venv/bin/bandit -r app -f html -o bandit-report.html || true
                             '''
                         }
-                    )
+                    }
                 }
             }
         }
