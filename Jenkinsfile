@@ -95,7 +95,7 @@ pipeline {
                         def tagName = "v1.0.${env.BUILD_NUMBER}"
                         def releaseName = "Release ${tagName}"
                         def repo = "SugumarSrinivasan/Python"
-                        def artifactPath = "project/dist/app.zip"
+                        def artifactPath = "project/dist/app.zip" // Change this to your artifact path
         
                         sh """#!/bin/bash
                         set -e
@@ -103,6 +103,7 @@ pipeline {
                         echo "Checking if release for tag ${tagName} exists on GitHub..."
                         release_info=\$(curl -s -H "Authorization: token ${GH_TOKEN}" https://api.github.com/repos/${repo}/releases/tags/${tagName})
         
+                        # Check if release exists by looking for id in JSON response
                         release_id=\$(echo "\$release_info" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('id',''))" || echo "")
         
                         if [ -z "\$release_id" ]; then
@@ -127,20 +128,7 @@ pipeline {
         
                             release_id=\$(cat release.json | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])")
                         else
-                            echo "Release exists with ID \$release_id. Checking for existing asset..."
-                        fi
-        
-                        # Check and delete existing asset
-                        existing_asset_id=\$(curl -s -H "Authorization: token ${GH_TOKEN}" \\
-                            https://api.github.com/repos/${repo}/releases/\$release_id/assets \\
-                            | python3 -c "import sys, json; assets=json.load(sys.stdin); \\
-                                matches = [a for a in assets if a['name'] == '$(basename ${artifactPath})']; \\
-                                print(matches[0]['id'] if matches else '')")
-        
-                        if [ ! -z "\$existing_asset_id" ]; then
-                            echo "Deleting existing asset with ID \$existing_asset_id..."
-                            curl -s -X DELETE -H "Authorization: token ${GH_TOKEN}" \\
-                                https://api.github.com/repos/${repo}/releases/assets/\$existing_asset_id
+                            echo "Release exists with ID \$release_id. Will upload artifact."
                         fi
         
                         upload_url="https://uploads.github.com/repos/${repo}/releases/\${release_id}/assets?name=\$(basename ${artifactPath})"
@@ -218,16 +206,6 @@ pipeline {
             archiveArtifacts artifacts: 'project/htmlcov/**', fingerprint: true
             archiveArtifacts artifacts: 'project/pylint-report.html', fingerprint: true
             archiveArtifacts artifacts: 'project/bandit-report.html', fingerprint: true
-
-            emailext (
-                to: 'sugumarsks@example.com',
-                subject: "Build ${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: """<p>Job: ${env.JOB_NAME}</p>
-                         <p>Build Number: ${env.BUILD_NUMBER}</p>
-                         <p>Status: ${currentBuild.currentResult}</p>
-                         <p><a href='${env.BUILD_URL}'>Open Build</a></p>""",
-                mimeType: 'text/html'
-            )
             dir('project') {
                 publishHTML([
                     reportDir: 'htmlcov',
@@ -254,8 +232,8 @@ pipeline {
                     allowMissing: false
                 ])       
             cleanWs()
-            }
-        }     
+            } 
+        }      
         success {
             echo 'Build succeeded!'
         }
